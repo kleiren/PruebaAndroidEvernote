@@ -1,0 +1,48 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fragment_dialog"
+    android:layout_width="match_parent"
+    android:layout_height="fill_parent"
+    android:gravity="top|center"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/dialog_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Note" />
+
+    <EditText
+        android:id="@+id/diaNewNote_etxtTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Title" />
+    <EditText
+        android:id="@+id/diaNewNote_etxtContent"
+
+        android:inputType="textMultiLine"
+    android:lines="8"
+    android:minLines="6"
+    android:gravity="top|left"
+    android:maxLines="10"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:scrollbars="vertical"
+        android:hint="Content"
+    />
+
+    <com.simplify.ink.InkView
+        android:id="@+id/diaNewNote_ink"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"/>
+
+
+    <Button
+        android:id="@+id/diaNewNote_btnSend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send"
+        android:textSize="8sp"
+        android:textStyle="bold|italic"
+        />
+
+</LinearLayout>
