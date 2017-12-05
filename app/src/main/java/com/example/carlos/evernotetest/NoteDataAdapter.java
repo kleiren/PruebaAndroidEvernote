@@ -41,9 +41,9 @@ public class NoteDataAdapter extends RecyclerView.Adapter<NoteDataAdapter.ViewHo
 
     List<Note> notes;
     Context context;
-    public NoteDataAdapter(NoteList notes, Context context) {
+    public NoteDataAdapter(List<Note> notes, Context context) {
         this.context = context;
-        this.notes = notes.getNotes();
+        this.notes = notes;
     }
 
     @Override
@@ -54,12 +54,19 @@ public class NoteDataAdapter extends RecyclerView.Adapter<NoteDataAdapter.ViewHo
         return new ViewHolder(view);
     }
 
+    void cleanView(final NoteDataAdapter.ViewHolder viewHolder){
+        viewHolder.txt_title.setText("");
+        viewHolder.txt_resourceRec.setText("");
+        viewHolder.txt_content.setText("");
+        viewHolder.img_resource.setVisibility(View.GONE);
+    }
+
 
 
 
     @Override
     public void onBindViewHolder(final NoteDataAdapter.ViewHolder viewHolder, int i) {
-        
+        cleanView(viewHolder);
         viewHolder.txt_title.setText(notes.get(i).getTitle());
 
         final EvernoteNoteStoreClient noteStoreClient = EvernoteSession.getInstance().getEvernoteClientFactory().getNoteStoreClient();
@@ -72,8 +79,9 @@ public class NoteDataAdapter extends RecyclerView.Adapter<NoteDataAdapter.ViewHo
 
                 if (result.getResources() != null) {
 
-
                     Bitmap bitmap = BitmapFactory.decodeByteArray(result.getResources().get(0).getData().getBody(), 0, result.getResources().get(0).getData().getBody().length);
+                    viewHolder.img_resource.setVisibility(View.VISIBLE);
+
                     viewHolder.img_resource.setImageBitmap(bitmap);
 
 
@@ -97,6 +105,10 @@ public class NoteDataAdapter extends RecyclerView.Adapter<NoteDataAdapter.ViewHo
                         }
                         viewHolder.txt_resourceRec.setText(new String(sb));
                     }
+                }
+                else {
+                    viewHolder.txt_resourceRec.setText("");
+                    viewHolder.img_resource.setVisibility(View.GONE);
 
                 }
             }

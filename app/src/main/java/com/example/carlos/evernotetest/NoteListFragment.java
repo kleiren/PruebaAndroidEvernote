@@ -1,20 +1,23 @@
 package com.example.carlos.evernotetest;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.text.Html;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.evernote.client.android.EvernoteSession;
@@ -31,6 +34,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -42,6 +47,7 @@ public class NoteListFragment extends Fragment {
     private Activity parentActivity;
 
     NoteList noteList;
+    private RecyclerView recyclerView;
 
     public NoteListFragment() {
     }
@@ -51,6 +57,7 @@ public class NoteListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
     }
 
@@ -88,9 +95,8 @@ public class NoteListFragment extends Fragment {
                         Toast.makeText(getActivity(), ""+ result.getNotes().size(), Toast.LENGTH_SHORT).show();
 
                         noteList = result;
-                        adapter = new NoteDataAdapter(noteList, getActivity());
+                        adapter = new NoteDataAdapter(noteList.getNotes(), getActivity());
                         initViews(sectorView);
-
 
                     }
 
@@ -113,7 +119,7 @@ public class NoteListFragment extends Fragment {
 
     private void initViews(View view) {
 
-        RecyclerView recyclerView = view.findViewById(R.id.card_recycler_view_zones);
+        recyclerView = view.findViewById(R.id.card_recycler_view_zones);
         recyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
@@ -200,6 +206,65 @@ public class NoteListFragment extends Fragment {
             }
         });
     }
+
+
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        if (id == R.id.sort_date) {
+
+            ArrayList<Note> notes= sortByDate((ArrayList<Note>) noteList.getNotes());
+            adapter = new NoteDataAdapter(notes, getActivity());
+            recyclerView.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
+
+            return true;
+        }  if (id == R.id.sort_name) {
+
+            ArrayList<Note> notes= sortByTitle((ArrayList<Note>) noteList.getNotes());
+            adapter = new NoteDataAdapter(notes, getActivity());
+            recyclerView.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    ArrayList<Note> sortByTitle(ArrayList<Note> notes){
+
+        notes.sort(new Comparator<Note>() {
+            @Override
+            public int compare(Note note, Note note1) {
+                return note.getTitle().compareTo(note1.getTitle());
+            }
+        });
+        return notes;
+
+    }
+
+    ArrayList<Note> sortByDate(ArrayList<Note> notes){
+
+        notes.sort(new Comparator<Note>() {
+            @Override
+            public int compare(Note note, Note note1) {
+                return Long.valueOf(note.getCreated()).compareTo(note1.getCreated());
+            }
+        });
+        return notes;
+
+    }
+
 
 
 }
