@@ -43,27 +43,21 @@ public class MainActivity extends AppCompatActivity {
 
         context = this;
 
-
         if (!EvernoteSession.getInstance().isLoggedIn()) {
             return;
         }
-
-
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, new NoteListFragment())
                 .commit();
 
-
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NewNoteDialog.newInstance().show(getSupportFragmentManager(), "");
-
+                NewNoteDialog.newInstance().show(getSupportFragmentManager(), "newNoteDialog");
             }
         });
-
 
     }
 }

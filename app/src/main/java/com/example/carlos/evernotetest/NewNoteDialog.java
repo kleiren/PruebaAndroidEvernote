@@ -90,33 +90,12 @@ public class NewNoteDialog extends DialogFragment {
             public void onClick(View view) {
                 final EvernoteNoteStoreClient noteStoreClient = EvernoteSession.getInstance().getEvernoteClientFactory().getNoteStoreClient();
 
-                Note note = makeNote(etxtTitle.getText().toString(),etxtContent.getText().toString());
-
-
-
 
                 File file = bitmapToFile(inkView.getBitmap());
-                InputStream in = null;
-                FileData data = null;
-                try {
-                    in = new BufferedInputStream(new FileInputStream(file.getPath()));
-                    data = new FileData(EvernoteUtil.hash(in), new File(file.getPath()));
 
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                ResourceAttributes attributes = new ResourceAttributes();
-                attributes.setFileName("image");
+                Resource resource = createResource(file);
 
-                // Create a new Resource
-                Resource resource = new Resource();
-                resource.setData(data);
-                resource.setMime(getMimeType(Uri.parse(file.toURI().toString())));
-                resource.setAttributes(attributes);
-
-                note.addToResources(resource);
+                Note note = makeNote(etxtTitle.getText().toString(),etxtContent.getText().toString(), resource);
 
                 noteStoreClient.createNoteAsync(note, new EvernoteCallback<Note>() {
                             @Override
@@ -144,6 +123,31 @@ public class NewNoteDialog extends DialogFragment {
 
 
         return view;
+    }
+
+    public Resource createResource(File file){
+        InputStream in = null;
+        FileData data = null;
+        try {
+            in = new BufferedInputStream(new FileInputStream(file.getPath()));
+            data = new FileData(EvernoteUtil.hash(in), new File(file.getPath()));
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ResourceAttributes attributes = new ResourceAttributes();
+        attributes.setFileName("image");
+
+        // Create a new Resource
+        Resource resource = new Resource();
+        resource.setData(data);
+        resource.setMime(getMimeType(Uri.parse(file.toURI().toString())));
+        resource.setAttributes(attributes);
+
+        return resource;
+
     }
 
     public String getMimeType(Uri uri) {
@@ -187,57 +191,20 @@ public class NewNoteDialog extends DialogFragment {
 
     }
 
-    public Note makeNote(String noteTitle, String noteBody) {
+
+    public Note makeNote(String noteTitle, String noteBody, Resource resource) {
 
         String nBody = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
         nBody += "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">";
         nBody += "<en-note>" + noteBody + "</en-note>";
 
-        // Create note object
         Note note = new Note();
         note.setTitle(noteTitle);
+        note.addToResources(resource);
         note.setContent(nBody);
-
         return note;
 
     }
-//
-//    public Note makeNoteWithResources(String noteTitle, String noteBody) {
-//
-//        String nBody = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-//        nBody += "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">";
-//        nBody += "<en-note>" + noteBody + "</en-note>";
-//
-//        // Create note object
-//        Note note = new Note();
-//        note.setTitle(noteTitle);
-//        note.setContent(nBody);
-//
-//
-//        if (resources != null && resources.size() > 0) {
-//            // Add Resource objects to note body
-//            nBody += "<br /><br />";
-//            ourNote.setResources(resources);
-//            for (Resource resource : resources) {
-//                StringBuilder sb = new StringBuilder();
-//                for (byte hashByte : resource.getData().getBodyHash()) {
-//                    int intVal = 0xff & hashByte;
-//                    if (intVal < 0x10) {
-//                        sb.append('0');
-//                    }
-//                    sb.append(Integer.toHexString(intVal));
-//                }
-//                String hexhash = sb.toString();
-//                nBody += "Attachment with hash " + hexhash + ": <br /><en-media type=\"" + resource.getMime() + "\" hash=\"" + hexhash + "\" /><br />";
-//            }
-//        }
-//        nBody += "</en-note>";
-//
-//
-//
-//        return note;
-//
-//    }
 
 
 }
