@@ -1,19 +1,19 @@
-package com.example.carlos.evernotetest;
+package com.example.carlos.evernotetest.root;
 
 import android.app.Application;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 
 import com.evernote.client.android.EvernoteSession;
+import com.example.carlos.evernotetest.login.LoginChecker;
+
+
+// Needed for getting evernote API to work, this registers the app and creates the API singletons for data retrieval
 
 public class App extends Application {
 
-
-    private static final String CONSUMER_KEY = "nope";
-    private static final String CONSUMER_SECRET = "nope";
+    private static final String CONSUMER_KEY = "nope"; // This should be a valid one
+    private static final String CONSUMER_SECRET = "nope"; // This should be a valid one
     private static final EvernoteSession.EvernoteService EVERNOTE_SERVICE = EvernoteSession.EvernoteService.SANDBOX;
     private static final boolean SUPPORT_APP_LINKED_NOTEBOOKS = true;
-
 
 
     @Override
@@ -28,13 +28,10 @@ public class App extends Application {
 
             consumerSecret = CONSUMER_SECRET;
 
-
-        //Set up the Evernote singleton session, use EvernoteSession.getInstance() later
         new EvernoteSession.Builder(this)
                 .setEvernoteService(EVERNOTE_SERVICE)
                 .setSupportAppLinkedNotebooks(SUPPORT_APP_LINKED_NOTEBOOKS)
                 .setForceAuthenticationInThirdPartyApp(true)
-//                .setLocale(Locale.SIMPLIFIED_CHINESE)
                 .build(consumerKey, consumerSecret)
                 .asSingleton();
 

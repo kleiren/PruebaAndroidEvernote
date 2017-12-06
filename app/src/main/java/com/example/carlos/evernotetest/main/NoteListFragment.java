@@ -1,13 +1,9 @@
-package com.example.carlos.evernotetest;
+package com.example.carlos.evernotetest.main;
 
-import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
-import android.text.Html;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -17,42 +13,56 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Toast;
 
 import com.evernote.client.android.EvernoteSession;
 import com.evernote.client.android.asyncclient.EvernoteCallback;
 import com.evernote.client.android.asyncclient.EvernoteNoteStoreClient;
 import com.evernote.edam.notestore.NoteFilter;
 import com.evernote.edam.notestore.NoteList;
-import com.evernote.edam.type.Note;
 import com.evernote.edam.type.Notebook;
+import com.example.carlos.evernotetest.R;
+import com.example.carlos.evernotetest.utils.ObservableNoteList;
+import com.example.carlos.evernotetest.utils.SimpleNote;
+import com.example.carlos.evernotetest.dialogs.ShowNoteDialog;
 
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 
-
+// Main view of the app, calls the necesary functions and displays all notes, listening to its changes
 
 public class NoteListFragment extends Fragment {
 
     private NoteDataAdapter adapter;
-    private Activity parentActivity;
+
+    private ObservableNoteList observableNote;
+
+    // In this arraylist the notes will be updated by the observable, and will be the source for the recyclerview, ordering and Dialogs
+    ArrayList<SimpleNote> simpleNotes = new ArrayList<>();
 
     NoteList noteList;
+
     private RecyclerView recyclerView;
+
+    // Observes the note retrieval process, updating the adapter and the simpleNoteList with its changes (there's a lot of ways to do this, but this is mine)
+    private Observer simpleNoteListChanged = new Observer() {
+        @Override
+        public void update(Observable o, Object newValue) {
+
+            simpleNotes = (ArrayList<SimpleNote>)newValue;
+            adapter = new NoteDataAdapter(simpleNotes, getActivity());
+            recyclerView.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
+
+        }
+    };
 
     public NoteListFragment() {
     }
-
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -65,17 +75,22 @@ public class NoteListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View zoneView = inflater.inflate(R.layout.fragment_note_list, container, false);
-        zoneView.findViewById(R.id.noSectorsImage).setVisibility(View.GONE);
-        prepareData(zoneView);
-
+        prepareData();
+        initViews(zoneView);
         return zoneView;
     }
 
+    public void update() {
+        prepareData();
+    }
 
-    private void prepareData(final View sectorView) {
+
+    // First evernote API "call for notes". Gets the list of notebooks, and then gets the list of notes from the first (default) notebook.
+    // After getting the notelist, creates an observable that will get all the note contents
+    // All this could be done with more observables and outside the fragment, but this ways was quicker to develop
+    private void prepareData() {
 
         final EvernoteNoteStoreClient noteStoreClient = EvernoteSession.getInstance().getEvernoteClientFactory().getNoteStoreClient();
-
 
         noteStoreClient.listNotebooksAsync(new EvernoteCallback<List<Notebook>>() {
             @Override
@@ -91,12 +106,12 @@ public class NoteListFragment extends Fragment {
                 noteStoreClient.findNotesAsync(filter, 0, 10, new EvernoteCallback<NoteList>() {
                     @Override
                     public void onSuccess(NoteList result) {
-
-                        Toast.makeText(getActivity(), ""+ result.getNotes().size(), Toast.LENGTH_SHORT).show();
-
                         noteList = result;
-                        adapter = new NoteDataAdapter(noteList.getNotes(), getActivity());
-                        initViews(sectorView);
+
+                        // After getting the noteList, a ObservableNoteList is created that will get all the notes content
+                        observableNote = new ObservableNoteList();
+                        observableNote.getSimpleNotesFromNoteList(result);
+                        observableNote.addObserver(simpleNoteListChanged);
 
                     }
 
@@ -112,14 +127,12 @@ public class NoteListFragment extends Fragment {
                 Log.e("test", "Error retrieving notebooks", exception);
             }
         });
-
-
     }
 
-
+    // This defines the recyclerview to show all notes and sets its adapter, that will be updated from the observable. Also calls the "showNoteDialog" when a card is tapped
     private void initViews(View view) {
 
-        recyclerView = view.findViewById(R.id.card_recycler_view_zones);
+        recyclerView = view.findViewById(R.id.card_recycler_view_notes);
         recyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
@@ -140,9 +153,8 @@ public class NoteListFragment extends Fragment {
                 View child = rv.findChildViewUnder(e.getX(), e.getY());
                 if (child != null && gestureDetector.onTouchEvent(e)) {
                     int position = rv.getChildAdapterPosition(child);
-
-                    initNewShowNoteDialog(noteList.getNotes().get(position));
-
+                    // Gets the position tapped and shows the showNotedialog with the corresponding simpleNote from the arraylist already downloaded
+                    initNewShowNoteDialog(simpleNotes.get(position));
                 }
 
                 return false;
@@ -159,54 +171,12 @@ public class NoteListFragment extends Fragment {
         });
     }
 
-    public void initNewShowNoteDialog(Note note){
+    // Shows the ShowNoteDialog from a simpleNote
+    public void initNewShowNoteDialog(SimpleNote simpleNote) {
 
-        final SimpleNote simpleNote = new SimpleNote();
-        simpleNote.setTitle(note.getTitle());
+        ShowNoteDialog.newInstance(simpleNote.getTitle(), simpleNote.getContent(), simpleNote.getImageData(), simpleNote.getImageOcr()).show(getActivity().getSupportFragmentManager(), "showNoteDialog");
 
-        final EvernoteNoteStoreClient noteStoreClient = EvernoteSession.getInstance().getEvernoteClientFactory().getNoteStoreClient();
-
-        noteStoreClient.getNoteAsync(note.getGuid(), true, true, true, false, new EvernoteCallback<Note>() {
-            @Override
-            public void onSuccess(Note result) {
-
-                simpleNote.setContent(String.valueOf(Html.fromHtml(result.getContent())));
-
-                if (result.getResources() != null) {
-
-                    simpleNote.setImageData(result.getResources().get(0).getData().getBody());
-
-                    ResourceOcrXmlParser resourceOcrXmlParser = new ResourceOcrXmlParser();
-
-                    if (result.getResources().get(0).getRecognition() != null) {
-                        InputStream in = new ByteArrayInputStream(result.getResources().get(0).getRecognition().getBody());
-
-                        List<ResourceOcrXmlParser.Item> a = null;
-                        try {
-                            a = resourceOcrXmlParser.parse(in);
-                        } catch (XmlPullParserException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        StringBuilder sb = new StringBuilder();
-                        for (ResourceOcrXmlParser.Item s : a) {
-                            sb.append(s.result.get(0));
-                            sb.append("\t");
-                        }
-                        simpleNote.setImageOcr(new String(sb));
-                    }
-                }
-                ShowNoteDialog.newInstance(simpleNote.getTitle(), simpleNote.getContent(), simpleNote.getImageData(), simpleNote.getImageOcr()).show(getActivity().getSupportFragmentManager(), "showNoteDialog");
-            }
-
-            @Override
-            public void onException(Exception exception) {
-
-            }
-        });
     }
-
 
 
     @Override
@@ -214,6 +184,8 @@ public class NoteListFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
     }
 
+
+    // The optionsMenu is used to show sorting methods, updating the adapter when selected
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -221,15 +193,17 @@ public class NoteListFragment extends Fragment {
 
         if (id == R.id.sort_date) {
 
-            ArrayList<Note> notes= sortByDate((ArrayList<Note>) noteList.getNotes());
+            // Instead of getting the notes all over again, uses the simpleNotes observable array that should be already full
+            ArrayList<SimpleNote> notes = sortByDate(simpleNotes);
             adapter = new NoteDataAdapter(notes, getActivity());
             recyclerView.setAdapter(adapter);
             adapter.notifyDataSetChanged();
 
             return true;
-        }  if (id == R.id.sort_name) {
+        }
+        if (id == R.id.sort_name) {
 
-            ArrayList<Note> notes= sortByTitle((ArrayList<Note>) noteList.getNotes());
+            ArrayList<SimpleNote> notes = sortByTitle(simpleNotes);
             adapter = new NoteDataAdapter(notes, getActivity());
             recyclerView.setAdapter(adapter);
             adapter.notifyDataSetChanged();
@@ -241,11 +215,12 @@ public class NoteListFragment extends Fragment {
     }
 
 
-    ArrayList<Note> sortByTitle(ArrayList<Note> notes){
+    // Sorting methods, applied to simpleNote arraylist
+    ArrayList<SimpleNote> sortByTitle(ArrayList<SimpleNote> notes) {
 
-        notes.sort(new Comparator<Note>() {
+        notes.sort(new Comparator<SimpleNote>() {
             @Override
-            public int compare(Note note, Note note1) {
+            public int compare(SimpleNote note, SimpleNote note1) {
                 return note.getTitle().compareTo(note1.getTitle());
             }
         });
@@ -253,17 +228,18 @@ public class NoteListFragment extends Fragment {
 
     }
 
-    ArrayList<Note> sortByDate(ArrayList<Note> notes){
+    ArrayList<SimpleNote> sortByDate(ArrayList<SimpleNote> notes) {
 
-        notes.sort(new Comparator<Note>() {
+        notes.sort(new Comparator<SimpleNote>() {
             @Override
-            public int compare(Note note, Note note1) {
-                return Long.valueOf(note.getCreated()).compareTo(note1.getCreated());
+            public int compare(SimpleNote note, SimpleNote note1) {
+                return note.getCreated().compareTo(note1.getCreated());
             }
         });
+        Collections.reverse(notes);
         return notes;
-
     }
+
 
 
 

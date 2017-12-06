@@ -1,45 +1,25 @@
-package com.example.carlos.evernotetest;
+package com.example.carlos.evernotetest.main;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.DialogFragment;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.SearchView;
-import android.text.TextUtils;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import com.evernote.client.android.EvernoteSession;
-import com.evernote.client.android.asyncclient.EvernoteCallback;
-import com.evernote.client.android.asyncclient.EvernoteNoteStoreClient;
-import com.evernote.edam.error.EDAMNotFoundException;
-import com.evernote.edam.error.EDAMSystemException;
-import com.evernote.edam.error.EDAMUserException;
-import com.evernote.edam.notestore.NoteFilter;
-import com.evernote.edam.notestore.NoteList;
-import com.evernote.edam.type.Note;
-import com.evernote.edam.type.Notebook;
-import com.evernote.thrift.TException;
+import com.example.carlos.evernotetest.dialogs.NewNoteDialog;
+import com.example.carlos.evernotetest.R;
 
-import java.util.ArrayList;
-import java.util.List;
+// Basic mainActivity, holds all the fragments of the app
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DialogInterface.OnDismissListener{
 
     Activity context;
-    private AlertDialog dialog;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,19 +33,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, new NoteListFragment())
+                .add(R.id.container, new NoteListFragment(), "noteListFragment")
+
                 .commit();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 NewNoteDialog.newInstance().show(getSupportFragmentManager(), "newNoteDialog");
             }
         });
 
     }
-
 
 
     @Override
@@ -78,6 +59,15 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    // When the "NewNoteDialog is dismissed, an update signal is sent to the NoteListFragment fot it to retrieve the new notes
+    @Override
+    public void onDismiss(DialogInterface dialogInterface) {
+
+        NoteListFragment fragment = (NoteListFragment) getSupportFragmentManager().findFragmentByTag("noteListFragment");
+        fragment.update();
     }
 
 }

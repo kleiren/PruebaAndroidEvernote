@@ -1,4 +1,4 @@
-package com.example.carlos.evernotetest;
+package com.example.carlos.evernotetest.login;
 
 import android.app.Activity;
 import android.app.Application;
@@ -8,13 +8,13 @@ import android.os.Bundle;
 import com.evernote.client.android.EvernoteOAuthActivity;
 import com.evernote.client.android.EvernoteSession;
 import com.evernote.client.android.login.EvernoteLoginActivity;
+import com.example.carlos.evernotetest.root.App;
 
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * @author rwondratschek
- */
+// Needed for Evernote API
+
 public class LoginChecker implements Application.ActivityLifecycleCallbacks {
 
     private static final List<Class<? extends Activity>> IGNORED_ACTIVITIES = Arrays.asList(

@@ -1,4 +1,4 @@
-package com.example.carlos.evernotetest;
+package com.example.carlos.evernotetest.utils;
 
 import android.util.Xml;
 
@@ -10,14 +10,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by carlos on 5/12/17.
- */
-public class ResourceOcrXmlParser {
-    // We don't use namespaces
+
+// Because of Evernote API, when getting an Ocr result, we get it as a XML file with a lot of info not quite easy to show.
+// This is a parser for the xml of the ocr, for now, just gets the "most likely" value of each detected word and returns them
+// SHould have more error detection and parsing...
+
+class ImageOcrXmlParser {
     private static final String ns = null;
 
-    public List<Item> parse(InputStream in) throws XmlPullParserException, IOException {
+    List<Item> parse(InputStream in) throws XmlPullParserException, IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -32,14 +33,11 @@ public class ResourceOcrXmlParser {
     private List<Item> readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
         List items = new ArrayList();
 
-       // parser.require(XmlPullParser.START_TAG, ns, "feed");
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
             }
             String name = parser.getName();
-            // Starts by looking for the entry tag
-
             if (name.equals("item")) {
                 items.add(readItem(parser));
             } else {

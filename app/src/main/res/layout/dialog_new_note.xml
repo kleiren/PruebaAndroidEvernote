@@ -1,48 +1,70 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/fragment_dialog"
     android:layout_width="match_parent"
     android:layout_height="fill_parent"
+    android:background="#d6d6d6"
     android:gravity="top|center"
-    android:orientation="vertical" >
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/dialog_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Note" />
+        android:text="New Note"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <EditText
         android:id="@+id/diaNewNote_etxtTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Title" />
+
     <EditText
         android:id="@+id/diaNewNote_etxtContent"
 
-        android:inputType="textMultiLine"
-    android:lines="8"
-    android:minLines="6"
-    android:gravity="top|left"
-    android:maxLines="10"
-    android:layout_height="wrap_content"
-    android:layout_width="match_parent"
-    android:scrollbars="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="top|left"
         android:hint="Content"
-    />
+        android:inputType="textMultiLine"
+        android:lines="8"
+
+        android:maxLines="10"
+        android:minLines="6"
+        android:scrollbars="vertical" />
 
     <com.simplify.ink.InkView
         android:id="@+id/diaNewNote_ink"
         android:layout_width="match_parent"
-        android:layout_height="200dp"/>
+        android:layout_height="200dp"
+        android:background="@android:color/white" />
 
-
-    <Button
-        android:id="@+id/diaNewNote_btnSend"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Send"
-        android:textSize="8sp"
-        android:textStyle="bold|italic"
-        />
+        android:orientation="horizontal">
+
+
+        <ImageButton
+            android:id="@+id/diaNewNote_btnInk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            app:srcCompat="@android:drawable/ic_menu_edit" />
+
+        <Button
+            android:id="@+id/diaNewNote_btnSend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_alignBottom="@+id/diaNewNote_btnInk"
+            android:layout_alignParentEnd="true"
+            android:layout_gravity="end"
+            android:layout_marginEnd="10dp"
+            android:text="Send"
+            android:textSize="8sp"
+            android:textStyle="bold|italic" />
+    </RelativeLayout>
 
 </LinearLayout>

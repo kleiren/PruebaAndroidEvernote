@@ -1,29 +1,20 @@
-package com.example.carlos.evernotetest;
+package com.example.carlos.evernotetest.utils;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
-/**
- * Created by carlos on 5/12/17.
- */
-
+// Basic object containing only the relevant data of the notes in the format needed for ist use in this application
 public class SimpleNote {
-    String title;
-    String content;
-    Bitmap image;
-    String imageOcr;
+    private String title;
+    private String content;
+    private Bitmap image;
+    private String imageOcr;
+
+    private Long created;
     private byte[] imageData;
 
-    public SimpleNote(String title, String content, Bitmap image, String imageOcr) {
-        this.title = title;
-        this.content = content;
-        this.image = image;
-        this.imageOcr = imageOcr;
+    SimpleNote() {
     }
-
-    public SimpleNote() {
-    }
-
-
     public String getTitle() {
         return title;
     }
@@ -52,14 +43,23 @@ public class SimpleNote {
         return imageOcr;
     }
 
-    public void setImageOcr(String imageOcr) {
+    void setImageOcr(String imageOcr) {
         this.imageOcr = imageOcr;
     }
 
-    public void setImageData(byte[] imageData) {
+    void setImageData(byte[] imageData) {
         this.imageData = imageData;
     }
     public byte[] getImageData() {
         return imageData;
     }
+
+    public Long getCreated() {
+        return created;
+    }
+
+    public void setCreated(Long created) {
+        this.created = created;
+    }
+
 }

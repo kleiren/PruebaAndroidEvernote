@@ -1,45 +1,26 @@
-package com.example.carlos.evernotetest;
+package com.example.carlos.evernotetest.dialogs;
 
 import android.app.Dialog;
-import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.evernote.client.android.EvernoteSession;
-import com.evernote.client.android.EvernoteUtil;
-import com.evernote.client.android.asyncclient.EvernoteCallback;
-import com.evernote.client.android.asyncclient.EvernoteNoteStoreClient;
-import com.evernote.client.conn.mobile.FileData;
-import com.evernote.edam.type.Note;
-import com.evernote.edam.type.Resource;
-import com.evernote.edam.type.ResourceAttributes;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import com.example.carlos.evernotetest.R;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-/**
- * Created by carlos on 4/12/17.
- */
+
+
+// Dialog showing all the required information of the note tapped.
 
 public class ShowNoteDialog extends DialogFragment {
 
@@ -53,6 +34,8 @@ public class ShowNoteDialog extends DialogFragment {
     TextView txtResourceOcr;
     @BindView(R.id.diaShNote_btnOk)
     Button btnOk;
+    @BindView(R.id.diaShNote_imgLayout)
+    View imgLayout;
 
     String title;
     String content;
@@ -66,7 +49,7 @@ public class ShowNoteDialog extends DialogFragment {
         args.putString("title", title);
         args.putString("content", content);
         args.putByteArray("image", image);
-        args.putString("resourceOcr", title);
+        args.putString("resourceOcr", resourceOcr);
         f.setArguments(args);
         return f;
     }
@@ -79,8 +62,11 @@ public class ShowNoteDialog extends DialogFragment {
             title = getArguments().getString("title");
             content = getArguments().getString("content");
             byte[] byteArray = getArguments().getByteArray("image");
-            image = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-            resourceOcr = getArguments().getString("resourceOcr");
+
+            if (byteArray != null) {
+                image = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+                resourceOcr = getArguments().getString("resourceOcr");
+            }
         }
 
 
@@ -109,9 +95,14 @@ public class ShowNoteDialog extends DialogFragment {
         });
         txtTitle.setText(title);
         txtContent.setText(content);
-        imgResource.setImageBitmap(image);
-        txtResourceOcr.setText(resourceOcr);
 
+        if (image != null){
+            imgLayout.setVisibility(View.VISIBLE);
+            imgResource.setImageBitmap(image);
+            txtResourceOcr.setText(resourceOcr);
+        }else  {
+            imgLayout.setVisibility(View.GONE);
+        }
 
         return view;
     }
