@@ -10,7 +10,7 @@ import com.example.carlos.evernotetest.login.LoginChecker;
 
 public class App extends Application {
 
-    private static final String CONSUMER_KEY = "nope"; // This should be a valid one
+    private static final String CONSUMER_KEY = "nope"; // This should be a valid one if not, the app will crash!
     private static final String CONSUMER_SECRET = "nope"; // This should be a valid one
     private static final EvernoteSession.EvernoteService EVERNOTE_SERVICE = EvernoteSession.EvernoteService.SANDBOX;
     private static final boolean SUPPORT_APP_LINKED_NOTEBOOKS = true;
